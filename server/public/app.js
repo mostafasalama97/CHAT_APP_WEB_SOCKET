@@ -1,250 +1,219 @@
-// const socket = io('ws://localhost:3500')
+const socket = io('ws://localhost:3500');
 
+const activity = document.getElementById('activity');
+const msgInput = document.getElementById('messageInp');
+const nameInput = document.getElementById('name');
+const roomInput = document.getElementById('room');
+const userList = document.querySelector('.user-list');
+const roomList = document.querySelector('.room-list');
+const chatDisplay = document.querySelector('.chat-display');
+const startRecordingBtn = document.getElementById('startRecordingBtn');
+const stopRecordingBtn = document.getElementById('stopRecordingBtn');
+const fileInput = document.getElementById('fileInput');
 
-// const activity = document.getElementById('activity')
-// const msgInput = document.getElementById('messageInp')
-// const nameInput = document.getElementById('name')
-// const roomInput = document.getElementById('room')
-// const userList = document.querySelector('.user-list')
-// const roomList = document.querySelector('.room-list')
-// const chatDisplay = document.querySelector('.chat-display')
+let mediaRecorder;
+let audioChunks = [];
 
+fileInput.addEventListener('change', async () => {
+    const file = fileInput.files[0];
+    if (!file) return;
 
+    const formData = new FormData();
+    formData.append('file', file);
 
+    const response = await fetch('http://localhost:3500/upload', {
+        method: 'POST',
+        body: formData
+    });
 
-// function sendMessage(e) {
-//     console.log(e)
-//     e.preventDefault()
-//     if (msgInput.value && nameInput.value && roomInput.value) {
-//         socket.emit('message', {
-//             "name": nameInput.value,
-//             "text": msgInput.value
-//         })
-//         msgInput.value = ''
+    const data = await response.json();
+    socket.emit('file', { name: nameInput.value, filePath: data.filePath });
+});
 
-//     }
-//     msgInput.focus()
-// }
+socket.on('file', ({ name, filePath }) => {
+    const li = document.createElement('li');
+    li.innerHTML = `<strong>${name}:</strong> <a href="${filePath}" target="_blank">Download File</a>`;
+    chatDisplay.appendChild(li);
+});
 
+// Audio recording setup
+startRecordingBtn.addEventListener('click', () => {
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.start();
 
-// function enterRoom(e) {
-//     e.preventDefault()
-//     if (nameInput.value && roomInput.value) {
-//         socket.emit('enterRoom', {
-//             "name": nameInput.value,
-//             "room": roomInput.value
-//         })
-//     }
-// }
-// document.getElementById("messageForm").addEventListener("submit", sendMessage)
+            mediaRecorder.addEventListener('dataavailable', event => {
+                audioChunks.push(event.data);
+            });
 
-// document.querySelector(".form-join").addEventListener("submit", enterRoom)
+            mediaRecorder.addEventListener('stop', () => {
+                const audioBlob = new Blob(audioChunks);
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audio = new Audio(audioUrl);
+                audio.controls = true;
 
+                const li = document.createElement('li');
+                li.appendChild(audio);
+                chatDisplay.appendChild(li);
 
+                audioChunks = []; // Reset the chunks for the next recording
+            });
+        });
+});
 
-// // not correct => not logic
-// // roomInput.addEventListener('keypress' , () => {
-// //     socket.emit('activity' , roomInput.value)
-// // })
+stopRecordingBtn.addEventListener('click', () => {
+    mediaRecorder.stop();
+});
 
-// nameInput.addEventListener('keypress', () => {
-//     socket.emit('activity', nameInput.value)
-// })
-
-
-// // listen for messages
-// socket.on('message', (data) => {
-//     activity.textContent = ''
-//     const { name, text, time } = data
-//     const li = document.createElement('li')
-//     li.className = 'post'
-//     if (name === nameInput.value) {
-//         li.className = 'post post--left'
-//     }
-//     if (name !== nameInput.value && name !== 'admin') {
-//         li.className = 'post post--right'
-//     }
-//     if (name !== 'admin') {
-//         li.innerHTML = `<div class="post__header">${name === nameInput.value} ? 'post__header_user' 
-//         :
-//         'post__header__reply'}"
-//         <span class="post__header--name">${name}</span>
-//         <span class="post__header--time">${time}</span>
-//         </div>
-//         <div class="post__text">${text}</div>
-//         `
-//     } else {
-//         li.innerHTML = `<div class="post__text">${text}</div>`
-//     }
-//     document.querySelector('.chat-display').appendChild(li)
-//     chatDisplay.scrollTop = chatDisplay.scrollHeight
-// })
-
-// msgInput.addEventListener('keypress', () => {
-//     socket.emit('activity', socket.id.substring(0, 5))
-// })
-
-
-// let activityTimer;
-// socket.on('activity', (name) => {
-//     activity.textContent = `${name} is typing...`
-//     console.log(activity)
-//     // clear after 3 secs
-//     clearTimeout(activityTimer)
-//     activityTimer = setTimeout(() => {
-//         activity.textContent = ''
-//     }, 3000)
-// })
-
-// socket.on('userlist', ({ users}) => {
-//     showUsers(users)
-// })
-
-// socket.on('roomList', ({ rooms }) => {
-//     showRooms(rooms)
-// })
-
-// // update room list
-// function showUsers(users) {
-//     userList.textContent = ''
-//     if (users) {
-//         userList.innerHTML = `<em>Users in ${chatRoom.value}:</em>`
-//         users.forEach((user, i) => {
-//             userList.textContent += ` ${user.name}`
-//             if (users.length > 1 && i !== users.length - 1) {
-//                 userList.textContent += ","
-//             }
-//         })
-//     }
-// }
-
-// // update user list
-// function showRooms(rooms) {
-//     roomList.textContent = ''
-//     if (rooms) {
-//         roomList.innerHTML = '<em>Active Rooms:</em>'
-//         rooms.forEach((room, i) => {
-//             roomList.textContent += ` ${room}`
-//             if (rooms.length > 1 && i !== rooms.length - 1) {
-//                 roomList.textContent += ","
-//             }
-//         })
-//     }
-// }
-
-
-
-const socket = io('ws://localhost:3500')
-
-const activity = document.getElementById('activity')
-const msgInput = document.getElementById('messageInp')
-const nameInput = document.getElementById('name')
-const roomInput = document.getElementById('room')
-const userList = document.querySelector('.user-list')
-const roomList = document.querySelector('.room-list')
-const chatDisplay = document.querySelector('.chat-display')
+// Function to fetch prediction from the Flask server
+async function fetchPrediction(text) {
+    const response = await fetch('http://localhost:5000/predict', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ input_text: text }),
+    });
+    const data = await response.json();
+    return data.predicted_text;
+}
 
 function sendMessage(e) {
-    e.preventDefault()
+    e.preventDefault();
     if (msgInput.value && nameInput.value && roomInput.value) {
         socket.emit('message', {
             "name": nameInput.value,
             "text": msgInput.value
-        })
-        msgInput.value = ''
+        });
+        msgInput.value = '';
     }
-    msgInput.focus()
+    msgInput.focus();
 }
 
 function enterRoom(e) {
-    e.preventDefault()
+    e.preventDefault();
     if (nameInput.value && roomInput.value) {
         socket.emit('enterRoom', {
             "name": nameInput.value,
             "room": roomInput.value
-        })
+        });
     }
 }
-document.getElementById("messageForm").addEventListener("submit", sendMessage)
-document.querySelector(".form-join").addEventListener("submit", enterRoom)
+
+document.getElementById("messageForm").addEventListener("submit", sendMessage);
+document.querySelector(".form-join").addEventListener("submit", enterRoom);
 
 nameInput.addEventListener('keypress', () => {
-    socket.emit('activity', nameInput.value)
-})
+    socket.emit('activity', nameInput.value);
+});
 
 // Listen for messages
 socket.on('message', (data) => {
-    activity.textContent = ''
-    const { name, text, time , color } = data
-    const li = document.createElement('li')
+    activity.textContent = '';
+    const { name, text, time } = data;
+    const li = document.createElement('li');
 
     if (name === nameInput.value) {
-        li.className = 'post post--right'
+        li.className = 'post post--right';
     } else if (name !== 'admin') {
-        li.className = 'post post--left'
+        li.className = 'post post--left';
     }
 
-    if (name !== 'admin') {
-        li.innerHTML = `
-            <div class="post__header" style="background-color: ${color || 'blue'};">
-                <span class="post__header--name">${name}</span>
-                <span class="post__header--time">${time}</span>
-            </div>
-            <div class="post__text">${text}</div>
-        `
-    } else {
-        li.innerHTML = `<div class="post__text">${text}</div>`
+    li.innerHTML = `
+        <div class="post__header">
+            <span class="post__header--name">${name}</span>
+            <span class="post__header--time">${time}</span>
+        </div>
+        <div class="post__text">${text}</div>
+    `;
+
+    chatDisplay.appendChild(li);
+    chatDisplay.scrollTop = chatDisplay.scrollHeight;
+});
+
+function showPredictionDropdown(predictedText) {
+    const dropdown = document.getElementById('predictionDropdown');
+    dropdown.innerHTML = ''; // Clear previous predictions
+
+    const predictions = predictedText.split(' ');
+
+    predictions.forEach(prediction => {
+        const li = document.createElement('li');
+        li.textContent = prediction;
+        li.className = 'dropdown-item';
+
+        li.addEventListener('click', () => {
+            msgInput.value += prediction + ' ';
+            dropdown.innerHTML = ''; // Clear the dropdown
+            msgInput.focus();
+        });
+
+        dropdown.appendChild(li);
+    });
+
+    const rect = msgInput.getBoundingClientRect();
+    dropdown.style.left = `${rect.left}px`;
+    dropdown.style.top = `${rect.bottom}px`;
+    dropdown.style.display = 'block';
+}
+
+// Hide the dropdown if the user clicks outside of it
+document.addEventListener('click', (event) => {
+    const dropdown = document.getElementById('predictionDropdown');
+    if (!dropdown.contains(event.target) && event.target !== msgInput) {
+        dropdown.style.display = 'none';
     }
+});
 
-    chatDisplay.appendChild(li)
-    chatDisplay.scrollTop = chatDisplay.scrollHeight
-})
+msgInput.addEventListener('input', async () => {
+    socket.emit('activity', nameInput.value);
 
-msgInput.addEventListener('keypress', () => {
-    socket.emit('activity', socket.id.substring(0, 5))
-})
+    const currentText = msgInput.value;
+    const predictedText = await fetchPrediction(currentText);
+
+    showPredictionDropdown(predictedText);
+});
 
 let activityTimer;
 socket.on('activity', (name) => {
-    activity.textContent = `${name} is typing...`
-    clearTimeout(activityTimer)
+    activity.textContent = `${name} is typing...`;
+    clearTimeout(activityTimer);
     activityTimer = setTimeout(() => {
-        activity.textContent = ''
-    }, 3000)
-})
+        activity.textContent = '';
+    }, 3000);
+});
 
 socket.on('userlist', ({ users }) => {
-    showUsers(users)
-})
+    showUsers(users);
+});
 
 socket.on('roomList', ({ rooms }) => {
-    showRooms(rooms)
-})
+    showRooms(rooms);
+});
 
-// Update room list
 function showUsers(users) {
-    userList.textContent = ''
+    userList.textContent = '';
     if (users) {
-        userList.innerHTML = `<em>Users in ${roomInput.value}:</em>`
+        userList.innerHTML = `<em>Users in ${roomInput.value}:</em>`;
         users.forEach((user, i) => {
-            userList.textContent += ` ${user.name}`
+            userList.textContent += ` ${user.name}`;
             if (users.length > 1 && i !== users.length - 1) {
-                userList.textContent += ","
+                userList.textContent += ",";
             }
-        })
+        });
     }
 }
 
-// Update user list
 function showRooms(rooms) {
-    roomList.textContent = ''
+    roomList.textContent = '';
     if (rooms) {
-        roomList.innerHTML = '<em>Active Rooms:</em>'
+        roomList.innerHTML = '<em>Active Rooms:</em>';
         rooms.forEach((room, i) => {
-            roomList.textContent += ` ${room}`
+            roomList.textContent += ` ${room}`;
             if (rooms.length > 1 && i !== rooms.length - 1) {
-                roomList.textContent += ","
+                roomList.textContent += ",";
             }
-        })
+        });
     }
 }

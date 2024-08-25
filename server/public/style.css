@@ -121,3 +121,24 @@ button {
 #activity {
     font-style: italic;
 }
+
+.dropdown-content {
+    position: absolute;
+    background-color: black;
+    border: 1px solid #ccc;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    max-height: 150px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.dropdown-item {
+    padding: 8px;
+    cursor: pointer;
+}
+
+.dropdown-item:hover {
+    background-color: #f1f1f1;
+}

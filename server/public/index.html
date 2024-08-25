@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,9 +9,7 @@
         integrity="sha512-11t8Q+vY9JlCrr+PveZKTYJq8n7O09Y5X/pk/aMd3vJugSvu4xOunGEUzaADqL3I8cZKE/pBwwCfXzDkRJh2sQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script defer src="app.js"></script>
-
 </head>
-
 <body>
     <main>
         <form class="form-join">
@@ -23,17 +20,20 @@
 
         <ul class="chat-display"></ul>
 
+        <!-- Add this below the message input field in your HTML -->
+        <ul id="predictionDropdown" class="dropdown-content"></ul>
+
         <p class="user-list"></p>
-
         <p class="room-list"></p>
-
         <p id="activity"></p>
 
         <form id="messageForm">
-            <input type="text" placeholder="enter your message" id="messageInp" required>
+            <input type="text" placeholder="Enter your message" id="messageInp">
+            <input type="file" id="fileInput">
+            <button id="startRecordingBtn">Start Recording</button>
+            <button id="stopRecordingBtn">Stop Recording</button>
             <button type="submit" id="sendBtn">Send</button>
         </form>
     </main>
 </body>
-
 </html>

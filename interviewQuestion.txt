@@ -1,0 +1,177 @@
+Beginner Level
+What is WebSocket?
+
+Answer: WebSocket is a communication protocol that provides full-duplex communication channels over a single, long-lived connection. Unlike HTTP, WebSocket allows for real-time data exchange between the client and server.
+How does WebSocket differ from HTTP?
+
+Answer: WebSocket is a protocol that operates on top of TCP, similar to HTTP. However, while HTTP is a request-response protocol, WebSocket provides full-duplex communication, meaning the client and server can send and receive data independently of each other.
+What is the WebSocket handshake?
+
+Answer: The WebSocket handshake is an HTTP-based negotiation between the client and server to establish a WebSocket connection. It starts as an HTTP request, and if successful, it switches the protocol to WebSocket.
+Explain the basic structure of a WebSocket URL.
+
+Answer: A WebSocket URL starts with ws:// for unencrypted connections or wss:// for encrypted connections (WebSocket Secure). The structure is similar to HTTP URLs, e.g., ws://example.com/socket.
+What is Socket.IO?
+
+Answer: Socket.IO is a JavaScript library for real-time web applications. It enables real-time, bi-directional communication between web clients and servers. It abstracts WebSocket and provides fallback mechanisms for older browsers that do not support WebSocket.
+What are the advantages of using Socket.IO over WebSocket?
+
+Answer: Socket.IO provides features like automatic reconnection, multiplexing multiple namespaces, room support, and fallbacks to long polling for browsers that do not support WebSocket, making it more versatile than WebSocket alone.
+What is the default port for WebSocket?
+
+Answer: The default port for WebSocket is 80 for ws:// and 443 for wss://, similar to HTTP and HTTPS.
+Can WebSocket work with load balancers?
+
+Answer: Yes, WebSocket can work with load balancers, but the load balancer must support WebSocket connections, and sticky sessions (session persistence) may be required to ensure that the WebSocket connection is routed to the same server.
+How do you establish a WebSocket connection in JavaScript?
+
+Answer:
+javascript
+Copy code
+const socket = new WebSocket('ws://example.com/socket');
+socket.onopen = () => {
+    console.log('WebSocket connection established');
+};
+socket.onmessage = (event) => {
+    console.log('Message received:', event.data);
+};
+socket.onclose = () => {
+    console.log('WebSocket connection closed');
+};
+How do you handle errors in a WebSocket connection?
+
+Answer:
+javascript
+Copy code
+socket.onerror = (error) => {
+    console.log('WebSocket error:', error);
+};
+Intermediate Level
+What are WebSocket subprotocols?
+
+Answer: WebSocket subprotocols are application-level protocols layered on top of the WebSocket protocol. They define a custom set of rules for communication between the client and server. Examples include graphql-ws for GraphQL and wamp for Web Application Messaging Protocol.
+Explain the concept of namespaces in Socket.IO.
+
+Answer: Namespaces in Socket.IO allow you to create multiple separate communication channels on the same connection. They are useful for separating concerns within an application, such as having different namespaces for chat, notifications, etc.
+How does Socket.IO handle reconnection?
+
+Answer: Socket.IO automatically attempts to reconnect when the connection is lost. It uses an exponential backoff strategy, meaning the time between reconnection attempts increases with each failed attempt until a maximum delay is reached.
+What is the significance of rooms in Socket.IO?
+
+Answer: Rooms in Socket.IO are a way to group sockets into a specific channel. A socket can join multiple rooms, and broadcasting to a room sends the message to all sockets within that room. This is particularly useful for implementing features like private chat or broadcasting messages to a specific group of users.
+Describe the WebSocket lifecycle.
+
+Answer: The WebSocket lifecycle consists of:
+Connecting: The client initiates a connection by sending a handshake request.
+Open: The connection is established, and data can be sent and received.
+Message: Data is transmitted bi-directionally between the client and server.
+Close: The connection is closed either by the client or server.
+Error: If an error occurs, the connection is usually terminated.
+How does WebSocket handle binary data?
+
+Answer: WebSocket can handle binary data in addition to text data. In JavaScript, you can send and receive binary data using ArrayBuffer and Blob objects.
+How do you implement authentication in WebSocket connections?
+
+Answer: Authentication in WebSocket connections can be implemented using query parameters in the WebSocket URL, custom headers in the handshake request, or by sending a token in the first message after the connection is established.
+What is the role of the emit and on methods in Socket.IO?
+
+Answer: The emit method is used to send a message or event from the client to the server (or vice versa). The on method is used to listen for incoming events. For example:
+javascript
+Copy code
+// Client-side
+socket.emit('chat message', 'Hello World');
+socket.on('chat message', (msg) => {
+    console.log('Message received:', msg);
+});
+How does Socket.IO support broadcasting?
+
+Answer: Broadcasting in Socket.IO allows you to send a message to all clients except the one that sent the message. This is typically used to notify all other clients about a particular event. It can be done as follows:
+javascript
+Copy code
+socket.broadcast.emit('event_name', data);
+What is the difference between WebSocket and Server-Sent Events (SSE)?
+
+Answer: WebSocket is a full-duplex communication protocol, allowing both the server and client to send and receive data independently. SSE (Server-Sent Events) is a one-way communication protocol where the server can send data to the client, but the client cannot send data back over the same connection.
+Advanced Level
+Explain how to scale WebSocket connections in a distributed system.
+
+Answer: Scaling WebSocket connections in a distributed system typically involves:
+Using a message broker like Redis to share state between multiple server instances.
+Implementing sticky sessions to ensure that the WebSocket connection remains attached to the same server instance.
+Using horizontal scaling by adding more server instances behind a load balancer that supports WebSocket.
+What are the security considerations when using WebSocket?
+
+Answer: Security considerations include:
+Using wss:// (WebSocket Secure) to encrypt data in transit.
+Validating and sanitizing incoming data to prevent injection attacks.
+Implementing proper authentication and authorization mechanisms.
+Protecting against DoS attacks by limiting the number of connections or message rates.
+How does Socket.IO handle protocol fallbacks, and why is it necessary?
+
+Answer: Socket.IO provides fallbacks for browsers that do not support WebSocket by using technologies like long polling or AJAX. This ensures compatibility with older browsers and more reliable connections in environments where WebSocket might not be available.
+Describe the process of setting up a custom WebSocket server in Node.js without using libraries like Socket.IO.
+
+Answer: Setting up a custom WebSocket server in Node.js involves:
+Creating an HTTP server.
+Using the ws package to handle WebSocket connections.
+Handling WebSocket events like connection, message, and close.
+Example:
+javascript
+Copy code
+const http = require('http');
+const WebSocket = require('ws');
+
+const server = http.createServer();
+const wss = new WebSocket.Server({ server });
+
+wss.on('connection', (ws) => {
+    ws.on('message', (message) => {
+        console.log('received:', message);
+        ws.send('Hello, you sent -> ' + message);
+    });
+
+    ws.on('close', () => {
+        console.log('Client disconnected');
+    });
+
+    ws.send('Welcome to the WebSocket server');
+});
+
+server.listen(8080, () => {
+    console.log('Server is listening on port 8080');
+});
+How do you manage WebSocket connection state across multiple server instances?
+
+Answer: Connection state can be managed across multiple server instances by using a shared in-memory store (like Redis) to keep track of active connections. This allows the WebSocket connection state to be consistent and synchronized across all server instances.
+What are the common issues with WebSocket performance, and how can they be mitigated?
+
+Answer: Common issues include:
+Latency: Mitigated by optimizing the network and using geographically distributed servers.
+Memory leaks: Mitigated by properly managing connection lifecycles and cleaning up resources.
+Scalability: Mitigated by using load balancers, clustering, and message brokers.
+How does Socket.IO handle CORS (Cross-Origin Resource Sharing)?
+
+Answer: Socket.IO handles CORS by allowing the server to specify which domains are allowed to connect. This is configured using the cors option in the server setup:
+javascript
+Copy code
+const io = require('socket.io')(server, {
+    cors: {
+        origin: "http://example.com",
+        methods: ["GET", "POST"],
+        allowedHeaders: ["my-custom-header"],
+        credentials: true
+    }
+});
+Explain the concept of backpressure in WebSocket and how to handle it.
+
+Answer: Backpressure occurs when the WebSocket server sends data faster than the client can process it, leading to buffer overflow. Handling backpressure involves monitoring the WebSocket’s bufferedAmount property and adjusting the rate of sending messages or pausing the transmission until the buffer is cleared.
+How do you test WebSocket applications?
+
+Answer: WebSocket applications can be tested by:
+Using tools like wscat or websocat for manual testing.
+Writing automated tests using testing frameworks like Mocha or Jest, combined with the ws library for simulating WebSocket connections.
+Implementing integration tests to simulate multiple clients and interactions.
+What is multiplexing in WebSocket, and how can it be implemented?
+
+Answer: Multiplexing in WebSocket allows multiple logical connections (channels) to share a single WebSocket connection. This can be implemented by creating subprotocols or using libraries that support multiplexing, such as Socket.IO namespaces or custom implementations using message tagging and routing logic.
+These questions should provide a thorough understanding of WebSocket and Socket.IO, from basic concepts to advanced techniques, making them suitable for interviews at any level.
