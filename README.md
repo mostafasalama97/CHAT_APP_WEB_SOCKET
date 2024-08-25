@@ -22,7 +22,7 @@ This is a real-time chat application built with Node.js, Express, Socket.io, and
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/chat-app.git
+git clone [https://github.com/your-username/chat-app.git](https://github.com/mostafasalama97/CHAT_APP_WEB_SOCKET.git)
 cd chat-app
 ```
 
